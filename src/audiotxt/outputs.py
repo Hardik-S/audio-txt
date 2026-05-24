@@ -6,7 +6,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .config import AudioTxtConfig
-from .file_utils import atomic_write_text
+from .file_utils import atomic_write_many_text
 from .transcribers.base import TranscriptionResult
 
 
@@ -26,16 +26,14 @@ def write_outputs(
         output_config,
     )
 
-    written: list[Path] = []
+    pending: list[tuple[Path, str]] = []
     if output_config.get("txt", True):
         txt_path = transcripts_dir / f"{base_stem}.txt"
-        atomic_write_text(txt_path, result.text.strip() + "\n")
-        written.append(txt_path)
+        pending.append((txt_path, result.text.strip() + "\n"))
 
     if output_config.get("cleaned_txt", False):
         cleaned_path = transcripts_dir / f"{base_stem}.cleaned.txt"
-        atomic_write_text(cleaned_path, clean_transcript(result.text, config).strip() + "\n")
-        written.append(cleaned_path)
+        pending.append((cleaned_path, clean_transcript(result.text, config).strip() + "\n"))
 
     if output_config.get("json", True):
         json_path = transcripts_dir / f"{base_stem}.json"
@@ -52,15 +50,14 @@ def write_outputs(
             "source_file": str(source_path),
             "sha256": audio_hash,
         }
-        atomic_write_text(json_path, json.dumps(payload, ensure_ascii=True, indent=2) + "\n")
-        written.append(json_path)
+        pending.append((json_path, json.dumps(payload, ensure_ascii=True, indent=2) + "\n"))
 
     if output_config.get("srt", True):
         srt_path = transcripts_dir / f"{base_stem}.srt"
-        atomic_write_text(srt_path, format_srt(result))
-        written.append(srt_path)
+        pending.append((srt_path, format_srt(result)))
 
-    return written
+    atomic_write_many_text(pending)
+    return [path for path, _text in pending]
 
 
 def _choose_output_stem(
@@ -81,7 +78,17 @@ def _choose_output_stem(
 
     if not any((transcripts_dir / f"{source_stem}{suffix}").exists() for suffix in suffixes):
         return source_stem
-    return f"{source_stem}.{audio_hash[:8]}"
+
+    hash_stem = f"{source_stem}.{audio_hash[:8]}"
+    if not any((transcripts_dir / f"{hash_stem}{suffix}").exists() for suffix in suffixes):
+        return hash_stem
+
+    index = 2
+    while True:
+        candidate = f"{hash_stem}.{index}"
+        if not any((transcripts_dir / f"{candidate}{suffix}").exists() for suffix in suffixes):
+            return candidate
+        index += 1
 
 
 def clean_transcript(text: str, config: AudioTxtConfig) -> str:

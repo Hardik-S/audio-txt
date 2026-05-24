@@ -45,6 +45,24 @@ def test_pipeline_processes_successful_file(tmp_path):
     assert fake.calls == 1
 
 
+def test_pipeline_file_argument_only_processes_requested_file(tmp_path):
+    fake = FakeTranscriber()
+    config = _config(tmp_path)
+    pipeline = AudioTxtPipeline(config, transcriber_factory=lambda _config: fake)
+    pipeline.initialize_folders()
+    queued = config.path("input_dir") / "queued.wav"
+    queued.write_bytes(b"queued")
+    external = tmp_path / "external.wav"
+    external.write_bytes(b"external")
+
+    stats = pipeline.run_once(file_path=external)
+
+    assert stats["processed"] == 1
+    assert queued.exists()
+    assert (config.path("processed_dir") / "external.wav").exists()
+    assert fake.calls == 1
+
+
 def test_pipeline_skips_duplicate_to_duplicates_folder(tmp_path):
     fake = FakeTranscriber()
     config = _config(tmp_path)

@@ -74,11 +74,12 @@ class AudioTxtPipeline:
         self.initialize_folders()
         self.recover_processing()
 
+        ingested_path: Path | None = None
         if file_path is not None:
-            self._ingest_external_file(file_path)
+            ingested_path = self._ingest_external_file(file_path)
 
         self._log_unsupported_inputs()
-        candidates = self.scan_input()
+        candidates = [ingested_path] if ingested_path is not None else self.scan_input()
         if dry_run:
             for candidate in candidates:
                 print(f"WOULD_PROCESS {candidate}")
@@ -151,6 +152,8 @@ class AudioTxtPipeline:
         source = source.expanduser().resolve()
         if not source.exists() or not source.is_file():
             raise FileNotFoundError(f"Audio file does not exist: {source}")
+        if not is_supported_audio(source, self.config.supported_extensions):
+            raise ValueError(f"Unsupported audio extension: {source}")
         input_dir = self.config.path("input_dir").resolve()
         if source.parent == input_dir:
             return source

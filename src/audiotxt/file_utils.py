@@ -105,3 +105,27 @@ def atomic_write_text(path: Path, text: str) -> None:
     temp_path = path.with_name(f"{path.name}.tmp")
     temp_path.write_text(text, encoding="utf-8")
     os.replace(temp_path, path)
+
+
+def atomic_write_many_text(files: list[tuple[Path, str]]) -> None:
+    temp_paths: list[Path] = []
+    final_paths: list[Path] = []
+    try:
+        for path, text in files:
+            if path.exists():
+                raise FileExistsError(f"Refusing to overwrite existing output: {path}")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            temp_path = path.with_name(f"{path.name}.tmp")
+            temp_path.write_text(text, encoding="utf-8")
+            temp_paths.append(temp_path)
+
+        for path, _text in files:
+            temp_path = path.with_name(f"{path.name}.tmp")
+            os.replace(temp_path, path)
+            final_paths.append(path)
+    except Exception:
+        for path in final_paths:
+            path.unlink(missing_ok=True)
+        for path in temp_paths:
+            path.unlink(missing_ok=True)
+        raise

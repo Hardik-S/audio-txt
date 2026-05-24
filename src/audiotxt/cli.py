@@ -14,14 +14,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    subparsers.add_parser("init", help="Create missing folders and default config.")
+    init_parser = subparsers.add_parser("init", help="Create missing folders and default config.")
+    init_parser.add_argument("--config", default=argparse.SUPPRESS, help="Path to config.yaml.")
 
     transcribe_parser = subparsers.add_parser("transcribe", help="Process waiting files once.")
+    transcribe_parser.add_argument("--config", default=argparse.SUPPRESS, help="Path to config.yaml.")
     transcribe_parser.add_argument("--file", dest="file_path", help="Specific audio file to ingest.")
     transcribe_parser.add_argument("--model", help="Override local faster-whisper model size.")
     transcribe_parser.add_argument("--dry-run", action="store_true", help="Print files without moving them.")
 
     watch_parser = subparsers.add_parser("watch", help="Poll input_audio and process new files.")
+    watch_parser.add_argument("--config", default=argparse.SUPPRESS, help="Path to config.yaml.")
     watch_parser.add_argument("--model", help="Override local faster-whisper model size.")
 
     return parser
