@@ -1,0 +1,90 @@
+paths:
+  input_dir: "input_audio"
+  processing_dir: "processing"
+  transcripts_dir: "transcripts"
+  processed_dir: "processed_audio"
+  failed_dir: "failed_audio"
+  logs_dir: "logs"
+
+audio:
+  supported_extensions:
+    - ".wav"
+    - ".mp3"
+    - ".m4a"
+    - ".aac"
+    - ".flac"
+    - ".ogg"
+  file_settle_seconds: 8
+  max_retries: 1
+
+engine:
+  mode: "local"
+
+local:
+  provider: "faster-whisper"
+  model_size: "small.en"
+  device: "cpu"
+  compute_type: "int8"
+  language: "en"
+  task: "transcribe"
+  beam_size: 5
+  vad_filter: true
+  condition_on_previous_text: false
+
+quality:
+  enabled: true
+  low_language_probability_threshold: 0.60
+  high_no_speech_probability_threshold: 0.65
+  min_text_chars_per_minute: 20
+
+outputs:
+  txt: true
+  json: true
+  srt: true
+  cleaned_txt: false
+  preserve_original_text: true
+
+cleaning:
+  remove_filler_words: false
+  filler_words:
+    - "um"
+    - "uh"
+    - "like"
+    - "you know"
+
+watch:
+  poll_seconds: 5
+  stop_after_empty_cycles: null
+
+duplicates:
+  enabled: true
+  hash_algorithm: "sha256"
+  manifest_file: "logs/manifest.jsonl"
+
+gemini:
+  enabled: false
+  model: "gemini-3.5-flash"
+  api_key_env: "GEMINI_API_KEY"
+  use_files_api_over_mb: 18
+  prompt: |
+    Generate a verbatim transcript of the speech in this audio file.
+    Preserve wording. Do not summarize. Do not add commentary.
+    If possible, include timestamps. Return plain transcript text.
+
+presets:
+  fast:
+    model_size: "base.en"
+    compute_type: "int8"
+    language: "en"
+  balanced:
+    model_size: "small.en"
+    compute_type: "int8"
+    language: "en"
+  accurate:
+    model_size: "medium.en"
+    compute_type: "int8"
+    language: "en"
+  multilingual:
+    model_size: "small"
+    compute_type: "int8"
+    language: null

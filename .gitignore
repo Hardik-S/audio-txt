@@ -1,0 +1,25 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Runtime artifacts. Keep folder structure via .gitkeep files.
+input_audio/*
+processing/*
+transcripts/*
+processed_audio/*
+failed_audio/*
+logs/*
+!input_audio/.gitkeep
+!processing/.gitkeep
+!transcripts/.gitkeep
+!processed_audio/.gitkeep
+!failed_audio/.gitkeep
+!logs/.gitkeep
+
+# Local model/cache folders that may be created during manual runs.
+.cache/
+models/
