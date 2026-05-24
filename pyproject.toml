@@ -9,12 +9,12 @@ description = "Local-first folder-drop audio transcription for Windows."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+  "faster-whisper>=1.0",
   "PyYAML>=6.0",
   "tqdm>=4.66",
 ]
 
 [project.optional-dependencies]
-local = ["faster-whisper>=1.0"]
 gemini = ["google-genai>=1.0"]
 test = ["pytest>=8.0"]
 
