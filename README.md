@@ -80,6 +80,12 @@ python -m audiotxt gui
 
 The GUI gives you a minimal control surface for choosing one audio file, processing the queue, starting or stopping folder watch mode, changing the model, switching English vs auto language mode, choosing output formats, opening output folders, and opening recent transcripts. It uses the same local pipeline and config as the CLI. `Stop Watch` stops the polling loop after the active cycle finishes; an active transcription is allowed to finish so files are not corrupted.
 
+Create or refresh the Windows desktop shortcut:
+
+```powershell
+.\scripts\create_desktop_shortcut.ps1
+```
+
 ## Dry Run
 
 ```powershell
