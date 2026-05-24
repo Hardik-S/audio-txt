@@ -74,12 +74,16 @@ class AudioTxtPipeline:
         self.initialize_folders()
         self.recover_processing()
 
-        ingested_path: Path | None = None
+        selected_path: Path | None = None
         if file_path is not None:
-            ingested_path = self._ingest_external_file(file_path)
+            selected_path = (
+                self._validate_audio_file(file_path)
+                if dry_run
+                else self._ingest_external_file(file_path)
+            )
 
         self._log_unsupported_inputs()
-        candidates = [ingested_path] if ingested_path is not None else self.scan_input()
+        candidates = [selected_path] if selected_path is not None else self.scan_input()
         if dry_run:
             for candidate in candidates:
                 print(f"WOULD_PROCESS {candidate}")
@@ -149,11 +153,7 @@ class AudioTxtPipeline:
             return "failed"
 
     def _ingest_external_file(self, source: Path) -> Path:
-        source = source.expanduser().resolve()
-        if not source.exists() or not source.is_file():
-            raise FileNotFoundError(f"Audio file does not exist: {source}")
-        if not is_supported_audio(source, self.config.supported_extensions):
-            raise ValueError(f"Unsupported audio extension: {source}")
+        source = self._validate_audio_file(source)
         input_dir = self.config.path("input_dir").resolve()
         if source.parent == input_dir:
             return source
@@ -162,6 +162,14 @@ class AudioTxtPipeline:
         shutil.copy2(source, destination)
         self.logger.info("INGEST copied source file into input: %s", destination)
         return destination
+
+    def _validate_audio_file(self, source: Path) -> Path:
+        source = source.expanduser().resolve()
+        if not source.exists() or not source.is_file():
+            raise FileNotFoundError(f"Audio file does not exist: {source}")
+        if not is_supported_audio(source, self.config.supported_extensions):
+            raise ValueError(f"Unsupported audio extension: {source}")
+        return source
 
     def _log_unsupported_inputs(self) -> None:
         input_dir = self.config.path("input_dir")

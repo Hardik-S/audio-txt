@@ -63,6 +63,22 @@ def test_pipeline_file_argument_only_processes_requested_file(tmp_path):
     assert fake.calls == 1
 
 
+def test_pipeline_dry_run_file_argument_does_not_ingest_external_file(tmp_path):
+    fake = FakeTranscriber()
+    config = _config(tmp_path)
+    pipeline = AudioTxtPipeline(config, transcriber_factory=lambda _config: fake)
+    pipeline.initialize_folders()
+    external = tmp_path / "external.wav"
+    external.write_bytes(b"external")
+
+    stats = pipeline.run_once(file_path=external, dry_run=True)
+
+    assert stats == {"processed": 0, "failed": 0, "duplicates": 0, "candidates": 1}
+    assert not (config.path("input_dir") / "external.wav").exists()
+    assert external.exists()
+    assert fake.calls == 0
+
+
 def test_pipeline_skips_duplicate_to_duplicates_folder(tmp_path):
     fake = FakeTranscriber()
     config = _config(tmp_path)
