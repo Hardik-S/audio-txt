@@ -202,6 +202,9 @@ class AudioTxtPipeline:
                 self._transcriber = FasterWhisperTranscriber(self.config)
         return self._transcriber
 
+    def reset_transcriber(self) -> None:
+        self._transcriber = None
+
     def _handle_failure(
         self,
         *,

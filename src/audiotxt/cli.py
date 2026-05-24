@@ -27,6 +27,9 @@ def build_parser() -> argparse.ArgumentParser:
     watch_parser.add_argument("--config", default=argparse.SUPPRESS, help="Path to config.yaml.")
     watch_parser.add_argument("--model", help="Override local faster-whisper model size.")
 
+    gui_parser = subparsers.add_parser("gui", help="Open the AudioTxt desktop interface.")
+    gui_parser.add_argument("--config", default=argparse.SUPPRESS, help="Path to config.yaml.")
+
     return parser
 
 
@@ -66,6 +69,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "watch":
         watch(pipeline)
         return 0
+
+    if args.command == "gui":
+        write_default_config(config_path)
+        try:
+            from .gui import launch_gui
+        except ImportError as exc:
+            parser.exit(1, f"AudioTxt GUI requires tkinter, but it is unavailable: {exc}\n")
+        return launch_gui(config_path)
 
     parser.error(f"Unknown command: {args.command}")
     return 2

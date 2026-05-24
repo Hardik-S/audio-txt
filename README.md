@@ -70,6 +70,16 @@ python -m audiotxt watch
 
 Watch mode polls `input_audio/` every five seconds by default.
 
+## Desktop GUI
+
+Open the local desktop interface:
+
+```powershell
+python -m audiotxt gui
+```
+
+The GUI gives you a minimal control surface for choosing one audio file, processing the queue, starting or stopping folder watch mode, changing the model, switching English vs auto language mode, choosing output formats, opening output folders, and opening recent transcripts. It uses the same local pipeline and config as the CLI. `Stop Watch` stops the polling loop after the active cycle finishes; an active transcription is allowed to finish so files are not corrupted.
+
 ## Dry Run
 
 ```powershell
@@ -145,5 +155,5 @@ python tests\smoke_test.py
 
 - The first real transcription run downloads the configured Whisper model.
 - CPU transcription can be slow on long files; use `base.en` for speed or `medium.en` for accuracy.
-- Speaker labels, diarization, word-level timestamps, live transcription, and GUI support are intentionally out of scope for the MVP.
+- Speaker labels, diarization, word-level timestamps, and live transcription are intentionally out of scope for the MVP.
 - Gemini fallback uploads audio to a cloud API and is disabled unless explicitly configured.
